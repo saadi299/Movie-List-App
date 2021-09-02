@@ -40,7 +40,7 @@ function App() {
     fetchMovieHandler();
   }, [fetchMovieHandler]);
 
-  async function addMovieHandler(movie) { //POST request on FireBase -1
+  async function addMovieHandler (movie) { //POST request on FireBase -1
     const response =await fetch('https://react-http-a4f0f-default-rtdb.firebaseio.com/movies.json',{
       method:'POST',
       body:JSON.stringify(movie),
