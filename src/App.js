@@ -1,50 +1,61 @@
-import React, { useState } from 'react';
-
-
-import MoviesList from './components/MoviesList';
-import './App.css';
+import React, { useEffect, useState } from "react";
+import MoviesList from "./components/MoviesList";
+import "./App.css";
 
 function App() {
+  const [moviesItems, setMoviesItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error,setError]= useState(null);  
 
-  const [moviesItems,setMoviesItems] =useState([
-    {
-      id: 1,
-      title: 'Some Dummy Movie',
-      opening_crawl: 'This is the opening text of the movie',
-      release_date: '2021-05-18',
-    },
-    {
-      id: 2,
-      title: 'Some Dummy Movie 2',
-      opening_crawl: 'This is the second opening text of the movie',
-      release_date: '2021-05-19',
-    },
-  ])
+  useEffect(() =>{
+    fetchMovieHandler();
+  },[])
 
+  async function fetchMovieHandler() {
+    setError(null)
+    setIsLoading(true)  
+    try{
+      const response= await fetch("https://swapi.py4e.com/api/films");
+      if (!response.ok){
+        throw new Error('Something went wrong here')
+      }
+      const data= await response.json();
 
+    const transformedMovies = data.results.map((movieData) =>{
+          return{
+            id:movieData.episode_id,
+            title:movieData.title,
+            opening_text:movieData.opening_crawl,
+            date:movieData.release_date
+          }
+        })
+        setMoviesItems(transformedMovies);
+        setIsLoading(false)  
+    } catch (error){
+      setError(error.message);
+      setIsLoading(false)
+    }
+  };
 
-          // useEffect(() => {
-          //   fetchData();
-          //   }, []);
-  const fetchMovieHandler = () =>{
-    fetch("https://swapi.py4e.com/api/films")
-          .then((response) => response.json())
-          .then((data) => setMoviesItems(data.results));   
-          
+  let content = <p>Found No Movies</p>  
+  if(moviesItems.length>0){
+    content = <MoviesList movies={moviesItems} />
   }
-  console.log(moviesItems) 
-
-
+  if(error){
+    content = <p>{error}</p>
+  }
+  if(isLoading){
+    content =<p>Loading.....</p>
+  }
   return (
     <React.Fragment>
       <section>
-        <button onClick={fetchMovieHandler} >Fetch Movies</button>
+        <button onClick={fetchMovieHandler}>Fetch Movies</button>
       </section>
       <section>
-        <MoviesList movies={moviesItems} />
+        {content}
       </section>
     </React.Fragment>
   );
 }
-
 export default App;
